@@ -1,14 +1,14 @@
 {
   "name": "guitars",
   "version": "1.0.0",
-  "description": "",
+  "description": "Guitars shop ecommerce",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server/server.js",
     "server": "nodemon server/server.js"
   },
-  "author": "",
+  "author": "Thanh Binh Tran",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^2.0.1",
