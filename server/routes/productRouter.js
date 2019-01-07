@@ -48,6 +48,50 @@ productRouter.route('/')
             });
     });
 
+productRouter.route('/shop')
+    // get products for the shop
+    .post((req, res) => {
+        const {
+            order = 'desc',
+            sortBy = '_id',
+            limit = 100,
+            skip,
+            filters = {},
+        } = req.body;
+        const findArgs = {};
+
+        Object.keys(filters).forEach((key) => {
+            if (filters[key].length > 0) {
+                if (key === 'price') {
+                    findArgs[key] = {
+                        $gte: filters[key][0],
+                        $lte: filters[key][1],
+                    };
+                } else {
+                    findArgs[key] = filters[key];
+                }
+            }
+        });
+
+        Product
+            .find(findArgs)
+            .populate('brand')
+            .populate('wood')
+            .sort([[sortBy, order]])
+            .skip(skip)
+            .limit(limit)
+            .exec()
+            .then((docs) => {
+                res.status(200).json({
+                    size: docs.length,
+                    products: docs,
+                });
+            })
+            .catch((err) => {
+                res.status(400).send(err);
+            });
+    });
+
 // Get products by id
 productRouter.route('/:ids')
     .get((req, res) => {

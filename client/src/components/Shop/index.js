@@ -4,11 +4,15 @@ import PageTop from '../../utils/PageTop';
 import { frets, price } from '../../utils/Form/fixed_categories';
 
 import { connect } from 'react-redux';
-import { getBrands, getWoods } from '../../actions/product';
+import { getProductsToShop , getBrands, getWoods } from '../../actions/product';
 
 import CollapseCheckbox from '../../utils/CollapseCheckbox';
 import CollapseRadio from '../../utils/CollapseRadio';
 
+import LoadMoreCards from './LoadMoreCards';
+import FontAwesomeIcon from '@fortawesome/react-fontawesome';
+import faBars from '@fortawesome/fontawesome-free-solid/faBars';
+import faTh from '@fortawesome/fontawesome-free-solid/faTh';
 class Shop extends Component {
 
     state = {
@@ -26,6 +30,12 @@ class Shop extends Component {
     componentDidMount() {
         this.props.dispatch(getBrands());
         this.props.dispatch(getWoods());
+
+        this.props.dispatch(getProductsToShop(
+            this.state.skip,
+            this.state.limit,
+            this.state.filters
+        ));
     }
 
     handlePrice = (value) => {
@@ -44,14 +54,41 @@ class Shop extends Component {
             newFilters[category] = prices
         }
 
+        this.appyFilter(newFilters);
+
         this.setState({
             filters: newFilters
         })
     }
 
-    render() {
-        console.log(this.state)
+    appyFilter = (filters) => {
+        this.props.dispatch(getProductsToShop(0, this.state.limit, filters))
+            .then(() => {
+            // set back the skip to 0 after we apply the new filters
+            this.setState({
+                skip: 0
+            })
+        });
+    }
 
+    loadMoreCards = () => {
+        const skip = this.state.skip + this.state.limit;
+
+        this.props.dispatch(getProductsToShop(skip, this.state.linit, this.state.filters, this.props.products.toShop))
+            .then(() => {
+                this.setState({
+                    skip
+                })
+            })
+    }
+
+    handleGrid = () => {
+        this.setState({
+            grid: !this.state.grid ? 'grid_bars' : ''
+        })
+    }
+
+    render() {
         const products = this.props.products;
 
         return (
@@ -94,7 +131,32 @@ class Shop extends Component {
 
 
                         <div className="right">
-                        right
+                            <div className="shop_options">
+                                <div className="shop_grids clear">
+                                    <div
+                                        className={`grid_btn ${this.state.grid ? '' : 'active'}`}
+                                        onClick={() => this.handleGrid()}
+                                    >
+                                        <FontAwesomeIcon icon={faTh} />
+                                    </div>
+                                    <div
+                                        className={`grid_btn ${!this.state.grid ? '' : 'active'}`}
+                                        onClick={() => this.handleGrid()}
+                                    >
+                                        <FontAwesomeIcon icon={faBars} />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <LoadMoreCards 
+                                        grid={this.state.grid}
+                                        limit={this.state.limit}
+                                        size={products.toShopSize}
+                                        products={products.toShop}
+                                        loadMore={() => this.loadMoreCards()}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
